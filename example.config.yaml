@@ -1,0 +1,29 @@
+rootDirectory: /Users/hilalymh/source/github.com/aws-controllers-k8s
+github:
+  username: a-hilaly
+  forkPrefix: ack-
+  token: 885cea4105aa53...
+
+repositories:
+  core:
+  - runtime
+  - community 
+  - code-generator
+  - dev-tools
+  services:
+  - s3
+  - ecr
+  - sfn
+  - sns
+  - sqs
+  - elasticache
+  - mq
+run:
+  flags:
+    aws-account-id: 771174509839
+    aws-region: eu-west-2
+    enable-development-logging: "true"
+    log-level: debug
+test:
+  unit:
+  e2e:
