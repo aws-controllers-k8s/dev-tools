@@ -6,6 +6,7 @@ require (
 	github.com/google/go-github/v33 v33.0.0
 	github.com/sirupsen/logrus v1.8.0
 	github.com/spf13/cobra v1.1.3
+	github.com/stretchr/testify v1.6.1
 	github.com/tidwall/pretty v1.0.5 // indirect
 	github.com/tidwall/sjson v1.1.5
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83

@@ -16,6 +16,11 @@ const (
 
 var (
 	DevelopmentTools = []Tool{
+
+		{
+			Name:           "go",
+			GetVersionArgs: []string{"version"},
+		},
 		{
 			Name:           "kind",
 			GetVersionArgs: []string{"--version"},

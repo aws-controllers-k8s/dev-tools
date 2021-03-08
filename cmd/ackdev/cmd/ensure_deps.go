@@ -36,14 +36,10 @@ func ensureDependencies(cmd *cobra.Command, args []string) error {
 			continue
 		}
 
-		fmt.Printf("installling %s... ", tool.Name)
-
 		scriptPath := fmt.Sprintf("scripts/install-%s.sh", tool.Name)
 		err = executeCommand(communityRepository.FullPath, "bash", []string{scriptPath}, true)
 		if err != nil {
 			fmt.Printf("FAIL\n")
-		} else {
-			fmt.Printf("OK\n")
 		}
 	}
 

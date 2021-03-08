@@ -41,6 +41,7 @@ var DefaultConfig = Config{
 			"dev-tools",
 			"community",
 			"code-generator",
+			"test-infra",
 		},
 	},
 	Github: GithubConfig{

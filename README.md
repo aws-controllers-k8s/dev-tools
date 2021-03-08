@@ -1,21 +1,28 @@
 ## ACK Development tools
 
-A list of tools and binaries that will make your contributor journey much more easier and enjoyable.
+A list of tools and binaries that will make your contributor journey easier and much more enjoyable.
 
 ### ackdev
 
 !!! This tool is still a work in progress. Expect dragons :dragon: and fires :fire:.
 
-`ackdev` is a command line that helps ACK developer and contributors manage, test and generate controllers. It also helps you manage dependencies, local repositories and github forks.
+`ackdev` is a command line that helps contributors to ACK manage, test and generate controllers. It also helps you manage dependencies, local repositories and github forks.
 
 
 ### Installation
 
 
-#### By cloning the repository
+#### By forking/cloning the repository
 
-```
-git clone git@github.com:a-hilaly/ack-dev-tools.git dev-tools
+First fork the `aws-controllers-k8s/dev-tools` repo and rename it to `$GH_USERNAME/ack-dev-tools` then run the script below - after replacing `"A-Hilaly"` with your own GitHub username.
+
+```bash
+export GH_USERNAME="A-Hilaly"
+cd $HOME/go/src/github.com/aws-controllers-k8s
+git clone git@github.com:$GH_USERNAME/ack-dev-tools dev-tools
+cd dev-tools
+git remote add upstream git@github.com:aws-controllers-k8s/dev-tools
+git fetch --all
 
 # Make sure to a have a Go compiler installed locally
 cd dev-tools && make install
@@ -23,7 +30,6 @@ cd dev-tools && make install
 
 #### Using `go get` (after merge)
 
-Single shot installation (will be available once we merge this branch)
 
 ```shell
 go get github.com/aws-controllers-k8s/dev-tools/cmd/ackdev
@@ -32,36 +38,7 @@ go get github.com/aws-controllers-k8s/dev-tools/cmd/ackdev
 
 ### Usage
 
-General usage
-```bash
-ackdev <verb> <[]args>
-```
-
-```bash
-A tool to manage ACK repositories, CRDs, development tools and testing
-
-Usage:
-  ackdev [command]
-
-Available Commands:
-  add         Add new controllers or core repositories
-  config      View or edit ackdev configuration file
-  deploy      Deploy controllers or crds to a kubernetes cluster
-  ensure      Ensure repositories or dependencies
-  generate    Generate controller code or Go client
-  help        Help about any command
-  list        Display one or many resources
-  run         Runs a controller binary locally
-  setup       Generate ackdev configuration file
-  test        Run unit or end2end tests for a given or multiple controllers
-  version     Print ackdev binary version informations
-
-Flags:
-      --config-file string   ack config file path (default "$HOME/.ackdev.yaml")
-  -h, --help                 help for ackdev
-
-Use "ackdev [command] --help" for more information about a command.
-```
+Call `ackdev help` for detailed usage instructions.
 
 #### Setup
 
@@ -74,11 +51,11 @@ ackdev setup --root-directory $WORKDIR --services s3
 
 The setup command will simply create a yaml file named `$HOME/.ackdev.yaml` (you can choose a different file path `--config-file`)
 
-!!! If you are already a contributor you probably want to use `$GOPATH/github.com/aws-controllers-k8s` as `$WORKDIR`. 
-If you are here to just to test the tool, 
-it is recommendable that you to set your `$WORKDIR` to a different directory. 
+> If you are already a contributor you probably want to use `$GOPATH/github.com/aws-controllers-k8s` as `$WORKDIR`. 
+If you only want to test the tool, 
+I recommended that you to set your `$WORKDIR` to a different directory.
 
-!!! Will my projects work/compile if i use a different directory than `$GOPATH/github.com/aws-controllers-k8s` ?
+> Will my projects work/compile if i use a different directory than `$GOPATH/github.com/aws-controllers-k8s` ?
 Yes, even if it's not inside `GOPATH`, it will work as expected. Since Go 1.11.4 the Go compiler doesn't rely **entirely** on GOPATH to build projects.
 
 You can view your generated configuration using:
@@ -139,7 +116,7 @@ kind           OK        0.9.0           /usr/local/bin/kind
 helm           OK        v3.2.4+g0ad800e /usr/local/bin/helm      
 mockery        NOT FOUND -                                        
 kubectl        OK        v1.20.0         /usr/local/bin/kubectl   
-kustomize      NOT FOUND -               /usr/local/bin/kustomize 
+kustomize      NOT FOUND -
 controller-gen OK        v0.4.0          /usr/bin/controller-gen
 ```
 
@@ -150,19 +127,17 @@ ackdev ensure deps # dependencies||dep|dependency
 ```
 
 ```bash
-installling mockery... Installing mockery into bin/mockery ... ok.
-OK
-installling kustomize... installing kustomize from https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh ... ok.
-OK
+Installing mockery into bin/mockery ... ok.
+Installing kustomize from https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh ... ok.
 ```
 
 ### Repositories
 
 ```bash
-ack list repositories # repo|repos|repository #--show-url
+ack list repositories # repo|repos|repository --show-url
 ```
 
-The out should look like this
+The output should look like this
 ```bash
 NAME                TYPE       BRANCH 
 runtime             core         
@@ -239,7 +214,7 @@ ackdev test unit s3
 ```
 
 ```bash
-ackdev test unit s3                                                                                                                                                       SIGIN
+ackdev test unit s3
 go test -v ./...
 ?   	github.com/aws-controllers-k8s/s3-controller/apis/v1alpha1	[no test files]
 ?   	github.com/aws-controllers-k8s/s3-controller/cmd/controller	[no test files]
