@@ -11,30 +11,10 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
-package cmd
+package version
 
-import (
-	"fmt"
-	"os"
-
-	"github.com/spf13/cobra"
+var (
+	GitVersion string
+	GitCommit  string
+	BuildDate  string
 )
-
-func init() {
-	rootCmd.AddCommand(listCmd)
-	rootCmd.AddCommand(versionCmd)
-}
-
-var rootCmd = &cobra.Command{
-	Use:           "ackdev",
-	SilenceUsage:  true,
-	SilenceErrors: true,
-	Short:         "A tool to manage ACK repositories, CRDs, development tools and testing",
-}
-
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-}

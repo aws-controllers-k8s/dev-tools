@@ -15,26 +15,28 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"runtime"
 
 	"github.com/spf13/cobra"
+
+	"github.com/aws-controllers-k8s/dev-tools/pkg/version"
 )
 
-func init() {
-	rootCmd.AddCommand(listCmd)
-	rootCmd.AddCommand(versionCmd)
+const versionTmpl = `Date: %s
+Build: %s
+Version: %s
+Git Hash: %s
+`
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Args:  cobra.NoArgs,
+	RunE:  printVersion,
+	Short: "Print ackdev binary version informations",
 }
 
-var rootCmd = &cobra.Command{
-	Use:           "ackdev",
-	SilenceUsage:  true,
-	SilenceErrors: true,
-	Short:         "A tool to manage ACK repositories, CRDs, development tools and testing",
-}
-
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
+func printVersion(*cobra.Command, []string) error {
+	goVersion := fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH)
+	fmt.Printf(versionTmpl, version.BuildDate, goVersion, version.GitVersion, version.GitCommit)
+	return nil
 }
