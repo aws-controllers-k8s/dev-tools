@@ -13,22 +13,31 @@
 
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"os"
+	"os/exec"
 
-var (
-	optListOutputFormat string
+	"github.com/spf13/cobra"
 )
 
-func init() {
-	listCmd.AddCommand(listDependenciesCmd)
-	listCmd.AddCommand(getConfigCmd)
-
-	getConfigCmd.PersistentFlags().StringVarP(&optListOutputFormat, "output", "o", "yaml", "output format (json|yaml)")
+var editConfigCmd = &cobra.Command{
+	Use:   "config",
+	Short: "Modify ackdev configuration file",
+	Args:  cobra.NoArgs,
+	RunE:  editConfig,
 }
 
-var listCmd = &cobra.Command{
-	Use:     "list",
-	Aliases: []string{"get", "ls"},
-	Args:    cobra.NoArgs,
-	Short:   "Display one or many resources",
+// editConfig opens ackdev configuration file in an editor. By default
+// opens the configuration file using vi.
+func editConfig(cmd *cobra.Command, args []string) error {
+	executable, err := exec.LookPath(editor)
+	if err != nil {
+		return err
+	}
+
+	c := exec.Command(executable, ackConfigPath)
+	c.Stdin = os.Stdin
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+	return c.Run()
 }

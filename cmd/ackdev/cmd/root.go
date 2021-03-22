@@ -20,8 +20,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	ackConfigPath string
+)
+
 func init() {
+	rootCmd.PersistentFlags().StringVar(&ackConfigPath, "config-file", defaultConfigPath, "ackdev configuration file path")
+
 	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(editCmd)
 	rootCmd.AddCommand(versionCmd)
 }
 

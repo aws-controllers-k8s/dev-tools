@@ -14,10 +14,33 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/olekukonko/tablewriter"
 )
+
+const (
+	ackdevConfigFileName = ".ackdev.yaml"
+)
+
+var (
+	homeDirectory     string
+	defaultConfigPath string
+)
+
+func init() {
+	// Set homeDirectory and defaultConfigPath
+	hd, err := homedir.Dir()
+	if err != nil {
+		fmt.Printf("unable to determine $HOME: %s\n", err)
+		os.Exit(1)
+	}
+	homeDirectory = hd
+	defaultConfigPath = filepath.Join(homeDirectory, ackdevConfigFileName)
+}
 
 func newTable() *tablewriter.Table {
 	table := tablewriter.NewWriter(os.Stdout)
