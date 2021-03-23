@@ -11,24 +11,10 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
-package cmd
-
-import "github.com/spf13/cobra"
+package version
 
 var (
-	optListOutputFormat string
+	GitVersion string
+	GitCommit  string
+	BuildDate  string
 )
-
-func init() {
-	listCmd.AddCommand(listDependenciesCmd)
-	listCmd.AddCommand(getConfigCmd)
-
-	getConfigCmd.PersistentFlags().StringVarP(&optListOutputFormat, "output", "o", "yaml", "output format (json|yaml)")
-}
-
-var listCmd = &cobra.Command{
-	Use:     "list",
-	Aliases: []string{"get", "ls"},
-	Args:    cobra.NoArgs,
-	Short:   "Display one or many resources",
-}

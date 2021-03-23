@@ -13,22 +13,30 @@
 
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"fmt"
+	"runtime"
 
-var (
-	optListOutputFormat string
+	"github.com/spf13/cobra"
+
+	"github.com/aws-controllers-k8s/dev-tools/pkg/version"
 )
 
-func init() {
-	listCmd.AddCommand(listDependenciesCmd)
-	listCmd.AddCommand(getConfigCmd)
+const versionTmpl = `Date: %s
+Build: %s
+Version: %s
+Git Hash: %s
+`
 
-	getConfigCmd.PersistentFlags().StringVarP(&optListOutputFormat, "output", "o", "yaml", "output format (json|yaml)")
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Args:  cobra.NoArgs,
+	RunE:  printVersion,
+	Short: "Print ackdev binary version informations",
 }
 
-var listCmd = &cobra.Command{
-	Use:     "list",
-	Aliases: []string{"get", "ls"},
-	Args:    cobra.NoArgs,
-	Short:   "Display one or many resources",
+func printVersion(*cobra.Command, []string) error {
+	goVersion := fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH)
+	fmt.Printf(versionTmpl, version.BuildDate, goVersion, version.GitVersion, version.GitCommit)
+	return nil
 }

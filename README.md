@@ -39,6 +39,58 @@ Call `ackdev help` for detailed usage instructions.
 
 ### Examples
 
+#### Manage ackdev configuration
+
+You can view the configuration used by ackdev by calling:
+
+```bash
+ackdev get config
+```
+
+The output will look like:
+
+```yaml
+rootDirectory: /home/amine/source/github.com/aws-controllers-k8s
+git:
+  sshKeyPath: /home/amine/.ssh/id_ed25519
+github:
+  token: somerandomtoken165489415631684131
+  username: A-Hilaly
+  forkPrefix: ack-
+repositories:
+  core:
+  - runtime
+  - community
+  - code-generator
+  - dev-tools
+  - test-infra
+  services:
+  - s3
+  - sns
+  - dynamodb
+  - ecr
+  - elasticache
+  - sagemaker
+  - sqs
+  - lambda
+run:
+  flags:
+    aws-account-id: "000000000000"
+    aws-region: eu-west-2
+    enable-development-logging: "true"
+    log-level: debug
+```
+
+To edit the configuration you can simply call:
+
+```
+ackdev edit config
+```
+
+by default this will open the configuration file using your OS default editor
+which is stored in the `EDITOR` environment variable. If this variable is not
+set `ackdev` will open the configuration using `vi`.
+
 #### List dependencies
 
 `ackdev` can help you manage dependencies and tools you will need in your ACK development journey.

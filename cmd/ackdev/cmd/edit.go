@@ -13,22 +13,31 @@
 
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"os"
+
+	"github.com/spf13/cobra"
+)
+
+const (
+	defaultEditor = "vi"
+)
 
 var (
-	optListOutputFormat string
+	editor string
 )
 
 func init() {
-	listCmd.AddCommand(listDependenciesCmd)
-	listCmd.AddCommand(getConfigCmd)
+	editor = os.Getenv("EDITOR")
+	if editor == "" {
+		editor = defaultEditor
+	}
 
-	getConfigCmd.PersistentFlags().StringVarP(&optListOutputFormat, "output", "o", "yaml", "output format (json|yaml)")
+	editCmd.AddCommand(editConfigCmd)
 }
 
-var listCmd = &cobra.Command{
-	Use:     "list",
-	Aliases: []string{"get", "ls"},
-	Args:    cobra.NoArgs,
-	Short:   "Display one or many resources",
+var editCmd = &cobra.Command{
+	Use:   "edit",
+	Args:  cobra.NoArgs,
+	Short: "Edit a resource from the default editor.",
 }
