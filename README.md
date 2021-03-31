@@ -1,3 +1,12 @@
+![units-tests-status](https://github.com/aws-controllers-k8s/dev-tools/actions/workflows/unit-tests.yaml/badge.svg)
+![Repository license](https://img.shields.io/github/license/aws-controllers-k8s/dev-tools?style=flat)
+![GitHub watchers](https://img.shields.io/github/watchers/aws-controllers-k8s/dev-tools?style=social)
+![GitHub stars](https://img.shields.io/github/stars/aws-controllers-k8s/dev-tools?style=social)
+![GitHub forks](https://img.shields.io/github/forks/aws-controllers-k8s/dev-tools?style=social)
+
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/aws-controllers-k8s/dev-tools)
+[![Go Report Card](https://goreportcard.com/badge/github.com/aws-controllers-k8s/dev-tools)](https://goreportcard.com/report/github.com/aws-controllers-k8s/dev-tools)
+
 ## ACK Development tools
 
 A list of tools and binaries that will make your contributor journey easier and much more enjoyable.
