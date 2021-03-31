@@ -15,6 +15,7 @@ package cmd
 
 import (
 	"fmt"
+	"go/build"
 	"os"
 	"path/filepath"
 
@@ -27,8 +28,10 @@ const (
 )
 
 var (
-	homeDirectory     string
-	defaultConfigPath string
+	homeDirectory        string
+	defaultConfigPath    string
+	goPath               = build.Default.GOPATH
+	defaultRootDirectory = filepath.Join(goPath, "src/github.com/aws-controllers-k8s")
 )
 
 func init() {

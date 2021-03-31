@@ -30,6 +30,7 @@ func init() {
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(editCmd)
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(setupCmd)
 }
 
 var rootCmd = &cobra.Command{

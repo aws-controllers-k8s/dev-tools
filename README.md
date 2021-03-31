@@ -37,6 +37,64 @@ go get github.com/aws-controllers-k8s/dev-tools/cmd/ackdev
 
 Call `ackdev help` for detailed usage instructions.
 
+### Setup
+
+To be able to use `ackdev` you'll have to run `ackdev setup` before any other command.
+
+For example
+```bash
+ackdev setup --root-directory $WORKDIR --services s3,ecr,sqs,sns
+```
+
+The setup command will simply create a yaml file named `$HOME/.ackdev.yaml`
+(you can choose a different file path `--config-file`)
+
+**NOTE**: If you are a contributor you probably want to leave `--root-directory` empty which will default to `$GOPATH/src/github.com/aws-controllers-k8s`
+(make sure that this directory exists).
+If you only want to test the tool, 
+We recommended you to set your `$WORKDIR` to a different directory.
+
+> Will my projects work/compile if I use a different directory than `$GOPATH/src/github.com/aws-controllers-k8s` ?
+
+Yes, even if it's not inside `GOPATH`, it will work as expected.
+Since Go 1.11.4 the Go compiler doesn't rely **entirely** on GOPATH to build projects.
+
+
+The generated configuration file will look like:
+
+``` yaml
+rootDirectory: /home/amine/go/source/github.com/aws-controllers-k8s/dev-tools
+git:
+  sshKeyPath: ""
+github:
+  token: ""
+  username: ""
+  forkPrefix: ""
+repositories:
+  core:
+  - runtime
+  - dev-tools
+  - community
+  - code-generator
+  services:
+  - s3
+  - ecr
+  - sns
+  - sqs
+run:
+  flags: {}
+```
+
+To use all `ackdev` features you will need to fill the `git.sshKeyPath` and `github` sections.
+You can do that using the `ackdev edit config` command,
+
+The `git.sshKeyPath` should point to the private key you use to push commits to your forks on Github.
+
+The `github.token` should contain a token that give `fork/renaming` permissions (`repo/*` policies).
+You can create one by following these [instructions][create-github-token].
+
+[create-github-token]: https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token
+
 ### Examples
 
 #### Manage ackdev configuration
