@@ -22,6 +22,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
+var _ RepositoryService = &Client{}
+
 var ErrorForkNotFound = errors.New("fork not found")
 
 const (
@@ -37,6 +39,16 @@ func NewClient(token string) *Client {
 	)
 	oc := oauth2.NewClient(ctx, ts)
 	return &Client{github.NewClient(oc)}
+}
+
+// RepositoryService is the interface implemented by the Github client wrapper. It exposes
+// functionalities to simplify the interactions with the repository endpoint of Github APIv3
+type RepositoryService interface {
+	ForkRepository(ctx context.Context, repoName string) error
+	RenameRepository(ctx context.Context, owner, name, newName string) error
+	GetRepository(ctx context.Context, owner, repoName string) (*github.Repository, error)
+	ListRepositoryForks(ctx context.Context, repoName string) ([]*github.Repository, error)
+	GetUserRepositoryFork(ctx context.Context, repoName string) (*github.Repository, error)
 }
 
 // Client is a github.Client wrapper
@@ -92,18 +104,13 @@ func (c *Client) GetRepository(ctx context.Context, owner, repoName string) (*gi
 	return repo, nil
 }
 
-type forkInfo struct {
-	Name  string
-	Owner string
-}
-
 // ListRepositoryForks list the forks of a given repository in the ACK organisation. It returns
 // a list fork information which includes the owner and the fork name (forkInfo).
-func (c *Client) ListRepositoryForks(ctx context.Context, repoName string) ([]*forkInfo, error) {
+func (c *Client) ListRepositoryForks(ctx context.Context, repoName string) ([]*github.Repository, error) {
 	ctx, cancel := context.WithTimeout(ctx, defaultRequestTimeout)
 	defer cancel()
 
-	var forks []*forkInfo
+	var forks []*github.Repository
 	var err error
 	var repos []*github.Repository
 	var resp *github.Response = &github.Response{
@@ -127,19 +134,14 @@ func (c *Client) ListRepositoryForks(ctx context.Context, repoName string) ([]*f
 			return nil, err
 		}
 
-		for _, repo := range repos {
-			forks = append(forks, &forkInfo{
-				Name:  *repo.Name,
-				Owner: *repo.Owner.Login,
-			})
-		}
+		forks = append(forks, repos...)
 	}
 
 	return forks, nil
 }
 
 // GetUserRepositoryFork takes an ACK repository name and tries to find it fork in the user public repositories.
-func (c *Client) GetUserRepositoryFork(ctx context.Context, repoName string) (*forkInfo, error) {
+func (c *Client) GetUserRepositoryFork(ctx context.Context, repoName string) (*github.Repository, error) {
 	ctx, cancel := context.WithTimeout(ctx, defaultRequestTimeout)
 	defer cancel()
 
@@ -172,10 +174,7 @@ func (c *Client) GetUserRepositoryFork(ctx context.Context, repoName string) (*f
 			if *repo.Fork {
 				// compare the fork original name and owner name
 				if *repo.Parent.Owner.Name == ACKOrg && *repo.Parent.Name == repoName {
-					return &forkInfo{
-						Name:  *repo.Name,
-						Owner: *repo.Owner.Name,
-					}, nil
+					return repo.Parent, nil
 				}
 			}
 		}
