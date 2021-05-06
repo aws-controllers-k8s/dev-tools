@@ -18,6 +18,8 @@ import (
 
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport"
+	githttp "gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 	gitssh "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 )
 
@@ -51,12 +53,14 @@ type OpenCloner interface {
 	Cloner
 }
 
-// New instanciate a new Git struct. remote defaults to 'origin'
-// signer can be nil.
-func New(signer ssh.Signer) *Git {
-	return &Git{
-		signer: signer,
+// New instanciate a new Git struct. It take a list of Option objects
+// to configure the remote and/or the authentication method.
+func New(options ...Option) *Git {
+	git := &Git{}
+	for _, option := range options {
+		option(git)
 	}
+	return git
 }
 
 // Git represents the components reponsible for cloning and
@@ -64,17 +68,26 @@ func New(signer ssh.Signer) *Git {
 // mechanisms used to clone repositories.
 // Git implements OpenCloner interface.
 type Git struct {
-	signer ssh.Signer
-	remote string
+	signer         ssh.Signer
+	remote         string
+	githubToken    string
+	githubUsername string
 }
 
-// Clone clones a remote git repository into a destination path.
+// Clone clones a remote git repository into a destination path. Clone will
+// prioritise SSH signer if it's set.
 func (g *Git) Clone(ctx context.Context, url, dest string) error {
-	auth := &gitssh.PublicKeys{
-		User: defaultUser,
-	}
+	var auth transport.AuthMethod
 	if g.signer != nil {
-		auth.Signer = g.signer
+		auth = &gitssh.PublicKeys{
+			User:   defaultUser,
+			Signer: g.signer,
+		}
+	} else {
+		auth = &githttp.BasicAuth{
+			Password: g.githubToken,
+			Username: g.githubUsername,
+		}
 	}
 	_, err := git.PlainCloneContext(ctx, dest, false, &git.CloneOptions{
 		Auth:       auth,
