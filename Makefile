@@ -11,10 +11,10 @@ GO_LDFLAGS=-ldflags "-X $(PKG_PATH)/version.GitVersion=$(VERSION) \
 			-X $(PKG_PATH)/version.BuildDate=$(BUILDDATE)"
 
 build:
-	go build ${GO_LDFLAGS} -o ackdev ./cmd/ackdev/main.go
+	go build ${GO_LDFLAGS} -o ./bin/ackdev ./cmd/ackdev/main.go
 
 install: build
-	cp ./ackdev $(shell go env GOPATH)/bin/ackdev
+	cp ./bin/ackdev $(shell go env GOPATH)/bin/ackdev
 
 test:
 	go test -v ./...
