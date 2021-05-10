@@ -18,3 +18,13 @@ install: build
 
 test:
 	go test -v ./...
+
+.PHONY: test install mocks
+
+mocks:
+	@echo -n "building mocks for pkg/git ... "
+	@mockery --quiet --name OpenCloner --tags=codegen --case=underscore --output=mocks --dir=pkg/git
+	@echo "ok."
+	@echo -n "building mocks for pkg/github ... "
+	@mockery --quiet --all --tags=codegen --case=underscore --output=mocks --dir=pkg/github
+	@echo "ok."
