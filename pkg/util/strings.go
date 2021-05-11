@@ -11,25 +11,16 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
-package cmd
+package util
 
-import "github.com/spf13/cobra"
-
-var (
-	optListOutputFormat string
-)
-
-func init() {
-	listCmd.AddCommand(listDependenciesCmd)
-	listCmd.AddCommand(listRepositoriesCmd)
-	listCmd.AddCommand(getConfigCmd)
-
-	getConfigCmd.PersistentFlags().StringVarP(&optListOutputFormat, "output", "o", "yaml", "output format (json|yaml)")
-}
-
-var listCmd = &cobra.Command{
-	Use:     "list",
-	Aliases: []string{"get", "ls"},
-	Args:    cobra.NoArgs,
-	Short:   "Display one or many resources",
+// InStrings returns true if the subject string is contained in the supplied
+// slice of strings
+// Gently copied from github.com/aws-controllers-k8s/runtime/pkg/util
+func InStrings(subject string, collection []string) bool {
+	for _, item := range collection {
+		if subject == item {
+			return true
+		}
+	}
+	return false
 }

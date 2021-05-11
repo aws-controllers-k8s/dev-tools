@@ -11,25 +11,23 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
-package cmd
+package testutil
 
-import "github.com/spf13/cobra"
+import "github.com/aws-controllers-k8s/dev-tools/pkg/config"
 
-var (
-	optListOutputFormat string
-)
-
-func init() {
-	listCmd.AddCommand(listDependenciesCmd)
-	listCmd.AddCommand(listRepositoriesCmd)
-	listCmd.AddCommand(getConfigCmd)
-
-	getConfigCmd.PersistentFlags().StringVarP(&optListOutputFormat, "output", "o", "yaml", "output format (json|yaml)")
-}
-
-var listCmd = &cobra.Command{
-	Use:     "list",
-	Aliases: []string{"get", "ls"},
-	Args:    cobra.NoArgs,
-	Short:   "Display one or many resources",
+// Returns a new config.Config object used for testing purposes.
+func NewConfig(services ...string) *config.Config {
+	return &config.Config{
+		Repositories: config.RepositoriesConfig{
+			Core: []string{
+				"runtime",
+				"code-generator",
+			},
+			Services: services,
+		},
+		Github: config.GithubConfig{
+			ForkPrefix: "ack-",
+			Username:   "ack-bot",
+		},
+	}
 }
