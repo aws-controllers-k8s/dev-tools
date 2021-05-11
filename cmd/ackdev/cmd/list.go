@@ -21,6 +21,7 @@ var (
 
 func init() {
 	listCmd.AddCommand(listDependenciesCmd)
+	listCmd.AddCommand(listRepositoriesCmd)
 	listCmd.AddCommand(getConfigCmd)
 
 	getConfigCmd.PersistentFlags().StringVarP(&optListOutputFormat, "output", "o", "yaml", "output format (json|yaml)")
