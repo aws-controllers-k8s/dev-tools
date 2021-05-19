@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"testing"
 
-	gogithub "github.com/google/go-github/v33/github"
+	gogithub "github.com/google/go-github/v35/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/src-d/go-git.v4"
@@ -328,8 +328,9 @@ func TestManager_EnsureFork(t *testing.T) {
 	fakeGithubClient.On(
 		"GetUserRepositoryFork",
 		testingCtx,
+		"ack-bot",
 		"s3-controller",
-	).Return(nil, github.ErrorForkNotFound)
+	).Return(nil, github.ErrForkNotFound)
 	fakeGithubClient.On(
 		"ForkRepository",
 		testingCtx,
@@ -340,6 +341,7 @@ func TestManager_EnsureFork(t *testing.T) {
 	fakeGithubClient.On(
 		"GetUserRepositoryFork",
 		testingCtx,
+		"ack-bot",
 		"sagemaker-controller",
 	).Return(&gogithub.Repository{Name: stringPtr("sagemaker-controller")}, nil)
 	fakeGithubClient.On(
@@ -354,8 +356,9 @@ func TestManager_EnsureFork(t *testing.T) {
 	fakeGithubClient.On(
 		"GetUserRepositoryFork",
 		testingCtx,
+		"ack-bot",
 		"ecr-controller",
-	).Return(nil, github.ErrorForkNotFound)
+	).Return(nil, github.ErrForkNotFound)
 	fakeGithubClient.On(
 		"ForkRepository",
 		testingCtx,

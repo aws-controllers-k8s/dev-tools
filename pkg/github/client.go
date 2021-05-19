@@ -18,13 +18,13 @@ import (
 	"errors"
 	"time"
 
-	"github.com/google/go-github/v33/github"
+	"github.com/google/go-github/v35/github"
 	"golang.org/x/oauth2"
 )
 
 var _ RepositoryService = &Client{}
 
-var ErrorForkNotFound = errors.New("fork not found")
+var ErrForkNotFound = errors.New("fork not found")
 
 const (
 	ACKOrg                = "aws-controllers-k8s"
@@ -48,7 +48,7 @@ type RepositoryService interface {
 	RenameRepository(ctx context.Context, owner, name, newName string) error
 	GetRepository(ctx context.Context, owner, repoName string) (*github.Repository, error)
 	ListRepositoryForks(ctx context.Context, repoName string) ([]*github.Repository, error)
-	GetUserRepositoryFork(ctx context.Context, repoName string) (*github.Repository, error)
+	GetUserRepositoryFork(ctx context.Context, owner, repoName string) (*github.Repository, error)
 }
 
 // Client is a github.Client wrapper
@@ -141,44 +141,19 @@ func (c *Client) ListRepositoryForks(ctx context.Context, repoName string) ([]*g
 }
 
 // GetUserRepositoryFork takes an ACK repository name and tries to find it fork in the user public repositories.
-func (c *Client) GetUserRepositoryFork(ctx context.Context, repoName string) (*github.Repository, error) {
+func (c *Client) GetUserRepositoryFork(ctx context.Context, owner string, repoName string) (*github.Repository, error) {
 	ctx, cancel := context.WithTimeout(ctx, defaultRequestTimeout)
 	defer cancel()
 
-	var err error
-	var repos []*github.Repository
-	var resp *github.Response = &github.Response{
-		// FirstPage is always of index 1
-		NextPage: 1,
+	repos, err := c.ListRepositoryForks(ctx, repoName)
+	if err != nil {
+		return nil, err
 	}
 
-	// iterate over all the pages
-	for resp.NextPage != 0 {
-		opt := &github.RepositoryListOptions{
-			ListOptions: github.ListOptions{
-				Page: resp.NextPage,
-				// Fetch the maximum possible the make smallest number of
-				// possible requests
-				PerPage: 100,
-			},
-		}
-
-		repos, resp, err = c.Client.Repositories.List(ctx, repoName, opt)
-		if err != nil {
-			return nil, err
-		}
-
-		// loop over the search results
-		for _, repo := range repos {
-			// look only for forked repositories
-			if *repo.Fork {
-				// compare the fork original name and owner name
-				if *repo.Parent.Owner.Name == ACKOrg && *repo.Parent.Name == repoName {
-					return repo.Parent, nil
-				}
-			}
+	for _, repo := range repos {
+		if *repo.Owner.Login == owner {
+			return repo, nil
 		}
 	}
-
-	return nil, ErrorForkNotFound
+	return nil, ErrForkNotFound
 }

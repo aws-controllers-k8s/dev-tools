@@ -251,7 +251,7 @@ func (m *Manager) clone(ctx context.Context, repoName string) error {
 func (m *Manager) EnsureFork(ctx context.Context, repo *Repository) error {
 	// TODO(hilaly): m.log.SetLevel(logrus.DebugLevel)
 
-	fork, err := m.ghc.GetUserRepositoryFork(ctx, repo.Name)
+	fork, err := m.ghc.GetUserRepositoryFork(ctx, m.cfg.Github.Username, repo.Name)
 	if err == nil {
 		if *fork.Name != repo.ExpectedForkName {
 			err = m.ghc.RenameRepository(ctx, m.cfg.Github.Username, *fork.Name, repo.ExpectedForkName)
@@ -259,7 +259,7 @@ func (m *Manager) EnsureFork(ctx context.Context, repo *Repository) error {
 				return err
 			}
 		}
-	} else if err == github.ErrorForkNotFound {
+	} else if err == github.ErrForkNotFound {
 		err = m.ghc.ForkRepository(ctx, repo.Name)
 		if err != nil {
 			return err
