@@ -17,7 +17,7 @@ install: build
 	cp ./bin/ackdev $(shell go env GOPATH)/bin/ackdev
 
 test:
-	go test -v ./...
+	go test -tags $(shell go env GOOS) -v ./...
 
 .PHONY: test install mocks
 
