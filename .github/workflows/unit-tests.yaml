@@ -12,7 +12,7 @@ on:
 jobs:
   unit-tests:
     name: make test
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         go-version:
