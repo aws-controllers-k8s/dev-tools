@@ -36,14 +36,14 @@ func (rt RepositoryType) String() string {
 	}
 }
 
-// repositoryTypeFromString casts a string to a RepositoryType
-func repositoryTypeFromString(s string) RepositoryType {
+// GetRepositoryTypeFromString casts a string to a RepositoryType
+func GetRepositoryTypeFromString(s string) RepositoryType {
 	switch s {
 	case "core":
 		return RepositoryTypeCore
 	case "controller":
 		return RepositoryTypeController
 	default:
-		panic("unsupported repository type")
+		panic("unsupported repository type: " + s)
 	}
 }
