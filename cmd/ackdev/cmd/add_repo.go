@@ -14,19 +14,23 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/spf13/cobra"
 
 	"github.com/aws-controllers-k8s/dev-tools/pkg/config"
 	"github.com/aws-controllers-k8s/dev-tools/pkg/repository"
 	"github.com/aws-controllers-k8s/dev-tools/pkg/util"
-	"github.com/spf13/cobra"
 )
 
 var (
-	ErrRepositoryAlreadyAdded = errors.New("repository has already been added")
+	optAddRepoType string
 )
+
+func init() {
+	addRepositoryCmd.PersistentFlags().StringVarP(&optAddRepoType, "type", "t", "controller", "repository type")
+}
 
 var addRepositoryCmd = &cobra.Command{
 	Use:     "repository <service> ...",
@@ -36,33 +40,39 @@ var addRepositoryCmd = &cobra.Command{
 }
 
 func addRepository(cmd *cobra.Command, args []string) error {
+	cfg, err := config.Load(ackConfigPath)
+	if err != nil {
+		return err
+	}
+
+	repoManager, err := repository.NewManager(cfg)
+	if err != nil {
+		return err
+	}
+
 	for _, service := range args {
-		service = strings.ToLower(args[0])
-
-		ctx := cmd.Context()
-
-		cfg, err := config.Load(ackConfigPath)
-		if err != nil {
-			return err
-		}
+		service = strings.ToLower(service)
 
 		// Check it doesn't already exist in the configuration
 		if util.InStrings(service, cfg.Repositories.Services) {
-			return ErrRepositoryAlreadyAdded
+			fmt.Printf("repository for service %s has already been added\n", service)
+			continue
 		}
 
-		repoManager, err := repository.NewManager(cfg)
+		_, err := repoManager.AddRepository(service, repository.GetRepositoryTypeFromString(optAddRepoType))
 		if err != nil {
 			return err
 		}
 
-		serviceRepoName := fmt.Sprintf("%s-controller", service)
-		if err := repoManager.EnsureRepository(ctx, serviceRepoName); err != nil {
+		ctx := cmd.Context()
+		if err := repoManager.EnsureRepository(ctx, service); err != nil {
 			return err
 		}
 
 		cfg.Repositories.Services = append(cfg.Repositories.Services, service)
-		config.Save(cfg, ackConfigPath)
+		if err := config.Save(cfg, ackConfigPath); err != nil {
+			return err
+		}
 	}
 
 	return nil
