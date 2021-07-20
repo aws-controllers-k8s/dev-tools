@@ -17,8 +17,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -29,7 +29,6 @@ import (
 	"github.com/aws-controllers-k8s/dev-tools/pkg/config"
 	ackdevgit "github.com/aws-controllers-k8s/dev-tools/pkg/git"
 	"github.com/aws-controllers-k8s/dev-tools/pkg/github"
-	"github.com/aws-controllers-k8s/dev-tools/pkg/util"
 )
 
 const (
@@ -90,30 +89,14 @@ type Manager struct {
 }
 
 // LoadRepository loads information about a single local repository
-func (m *Manager) LoadRepository(name string, t RepositoryType) (*Repository, error) {
+func (m *Manager) LoadRepository(name string) (*Repository, error) {
 	// check repo cache
-	repo, err := m.GetRepository(name)
+	repo, err := m.getRepository(name)
 	if err == nil {
 		return repo, nil
 	}
 
-	// fail if repository doesn't exist in the manager configuration
-	switch t {
-	case RepositoryTypeCore:
-		if !util.InStrings(name, m.cfg.Repositories.Core) {
-			return nil, ErrUnconfiguredRepository
-		}
-	case RepositoryTypeController:
-		if !util.InStrings(name, m.cfg.Repositories.Services) {
-			return nil, ErrUnconfiguredRepository
-		}
-	}
-
 	repoName := name
-	// controller repositories should always have a '-controller' suffix
-	if t == RepositoryTypeController {
-		repoName = fmt.Sprintf("%s-controller", name)
-	}
 
 	// set expected fork name
 	expectedForkName := repoName
@@ -137,6 +120,11 @@ func (m *Manager) LoadRepository(name string, t RepositoryType) (*Repository, er
 		gitHead = head.Name().Short()
 	}
 
+	t := RepositoryTypeCore
+	if strings.HasSuffix(name, "-controller") {
+		t = RepositoryTypeController
+	}
+
 	repo = &Repository{
 		Name:             repoName,
 		Type:             t,
@@ -156,13 +144,14 @@ func (m *Manager) LoadRepository(name string, t RepositoryType) (*Repository, er
 func (m *Manager) LoadAll() error {
 	// collect repositories from config
 	for _, coreRepo := range m.cfg.Repositories.Core {
-		_, err := m.LoadRepository(coreRepo, RepositoryTypeCore)
+		_, err := m.LoadRepository(coreRepo)
 		if err != nil {
 			return err
 		}
 	}
 	for _, serviceName := range m.cfg.Repositories.Services {
-		_, err := m.LoadRepository(serviceName, RepositoryTypeController)
+		serviceRepoName := fmt.Sprintf("%s-controller", serviceName)
+		_, err := m.LoadRepository(serviceRepoName)
 		if err != nil {
 			return err
 		}
@@ -170,8 +159,8 @@ func (m *Manager) LoadAll() error {
 	return nil
 }
 
-// GetRepository return a known repository
-func (m *Manager) GetRepository(repoName string) (*Repository, error) {
+// getRepository returns a repository from the cache
+func (m *Manager) getRepository(repoName string) (*Repository, error) {
 	repo, ok := m.repoCache[repoName]
 	if !ok {
 		return nil, ErrRepositoryNotCached
@@ -185,7 +174,7 @@ func (m *Manager) List(filters ...Filter) []*Repository {
 	repoNames := append(m.cfg.Repositories.Core, m.cfg.Repositories.Services...)
 mainLoop:
 	for _, repoName := range repoNames {
-		repo, err := m.GetRepository(repoName)
+		repo, err := m.LoadRepository(repoName)
 		if err != nil {
 			continue
 		}
@@ -201,7 +190,7 @@ mainLoop:
 
 // Clone clones a known repository to the config root directory
 func (m *Manager) clone(ctx context.Context, repoName string) error {
-	repo, err := m.GetRepository(repoName)
+	repo, err := m.LoadRepository(repoName)
 	if err != nil {
 		return fmt.Errorf("cannot clone repository %s: %v", repoName, err)
 	}
@@ -209,11 +198,11 @@ func (m *Manager) clone(ctx context.Context, repoName string) error {
 		return ErrRepositoryAlreadyExist
 	}
 
-	// clone fork repository
+	// clone fork repository with original name
 	err = m.git.Clone(
 		ctx,
 		m.urlBuilder(m.cfg.Github.Username, repo.ExpectedForkName),
-		repo.ExpectedForkName,
+		repo.FullPath,
 	)
 	if errors.Is(err, transport.ErrAuthenticationRequired) {
 		return ErrUnauthenticated
@@ -276,37 +265,20 @@ func (m *Manager) EnsureFork(ctx context.Context, repo *Repository) error {
 	return err
 }
 
-// used to help mocking os.Rename
-// TODO(hilalymh): Q4 switch to go1.16 os/fs library/interface
-var renameDirectory = os.Rename
-
 func (m *Manager) EnsureClone(ctx context.Context, repo *Repository) error {
 	err := m.clone(ctx, repo.Name)
 	if err != nil && err != ErrRepositoryAlreadyExist {
 		return err
 	}
 
-	// At this point we ensured that the fork repository is cloned. We need to rename it
-	// if there is any fork prefix.
-	if repo.Name != repo.ExpectedForkName {
-
-		newPath := filepath.Join(
-			filepath.Dir(repo.FullPath),
-			repo.Name,
-		)
-		err := renameDirectory(repo.FullPath, newPath)
-		if err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
-// EnsureAll ensures one repository.
+// EnsureRepository ensures the current user owns a fork of the given repository
+// and has cloned it.
 func (m *Manager) EnsureRepository(ctx context.Context, name string) error {
-	repo, err := m.GetRepository(name)
-	if err != nil {
+	repo, err := m.LoadRepository(name)
+	if err != nil && err != ErrRepositoryDoesntExist {
 		return err
 	}
 
