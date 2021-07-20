@@ -164,7 +164,7 @@ func TestManager_LoadAll(t *testing.T) {
 				git:       fakeGit,
 				repoCache: make(map[string]*Repository),
 			},
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "unexpected repository error",
@@ -210,19 +210,19 @@ func TestManager_clone(t *testing.T) {
 		"Clone",
 		testingCtx,
 		"https://github.com/ack-bot/ack-ecr-controller.git",
-		"ack-ecr-controller",
+		"ecr-controller",
 	).Return(transport.ErrAuthenticationRequired)
 	fakeGit.On(
 		"Clone",
 		testingCtx,
 		"https://github.com/ack-bot/ack-mq-controller.git",
-		"ack-mq-controller",
+		"mq-controller",
 	).Return(gitconfig.ErrRemoteConfigNotFound)
 	fakeGit.On(
 		"Clone",
 		testingCtx,
 		"https://github.com/ack-bot/ack-sagemaker-controller.git",
-		"ack-sagemaker-controller",
+		"sagemaker-controller",
 	).Return(nil)
 
 	type fields struct {

@@ -21,6 +21,9 @@ import (
 
 // NewRepository returns a pointer to a new repository.
 func NewRepository(name string, repoType RepositoryType) *Repository {
+	if repoType == RepositoryTypeController {
+		name = fmt.Sprintf("%s-controller", name)
+	}
 	return &Repository{
 		Name: name,
 		Type: repoType,
