@@ -82,7 +82,7 @@ func NamePrefixFilter(namePrefix string) Filter {
 // The only two possible types are 'controller' and 'core'
 func TypeFilter(t string) Filter {
 	return func(r *Repository) bool {
-		return r.Type == repositoryTypeFromString(t)
+		return r.Type == GetRepositoryTypeFromString(t)
 	}
 }
 
