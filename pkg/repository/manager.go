@@ -302,6 +302,44 @@ func (m *Manager) EnsureRepository(ctx context.Context, name string) error {
 		return err
 	}
 
+	err = m.EnsureRemotes(ctx, repo)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// EnsureRemotes ensures that the local repositories have both origin and upstream
+// remotes setup and point to the correct URLs.
+func (m *Manager) EnsureRemotes(ctx context.Context, repo *Repository) error {
+	remotes, err := util.GetRepositoryRemotes(repo.gitRepo)
+	if err != nil {
+		return err
+	}
+
+	expecetedOriginURL := m.urlBuilder(m.cfg.Github.Username, repo.ExpectedForkName)
+	// First check that one fo the  origin URLs points to the fork url
+	originURLs, ok := remotes[originRemoteName]
+	if !ok || !util.InStrings(expecetedOriginURL, originURLs) {
+		originURLs = append(originURLs, expecetedOriginURL)
+		err = util.UpdateRepositoryRemotes(repo.gitRepo, originRemoteName, originURLs)
+		if err != nil {
+			return fmt.Errorf("error updating origin URL: %v", err)
+		}
+	}
+
+	expectedUpstreamURL := m.urlBuilder(github.ACKOrg, repo.Name)
+	// Then check that one of the upstream URLs points to the original
+	// repository
+	upstreamURLs, ok := remotes[upstreamRemoteName]
+	if !ok || !util.InStrings(expectedUpstreamURL, upstreamURLs) {
+		upstreamURLs = append(upstreamURLs, expectedUpstreamURL)
+		err = util.UpdateRepositoryRemotes(repo.gitRepo, upstreamRemoteName, upstreamURLs)
+		if err != nil {
+			return fmt.Errorf("error updating origin URL: %v", err)
+		}
+	}
 	return nil
 }
 
@@ -314,6 +352,11 @@ func (m *Manager) EnsureAll(ctx context.Context) error {
 		}
 
 		err = m.EnsureClone(ctx, repo)
+		if err != nil {
+			return err
+		}
+
+		err = m.EnsureRemotes(ctx, repo)
 		if err != nil {
 			return err
 		}
