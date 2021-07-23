@@ -116,31 +116,29 @@ func (m *Manager) AddRepository(name string, t RepositoryType) (*Repository, err
 	repo := NewRepository(name, t)
 
 	// set expected fork name
-	expectedForkName := repo.Name
+	repo.ExpectedForkName = repo.Name
 	if m.cfg.Github.ForkPrefix != "" {
-		expectedForkName = fmt.Sprintf("%s%s", m.cfg.Github.ForkPrefix, repo.Name)
+		repo.ExpectedForkName = fmt.Sprintf("%s%s", m.cfg.Github.ForkPrefix, repo.Name)
 	}
 
-	var gitHead string
-	var gitRepo *git.Repository
-	fullPath := filepath.Join(m.cfg.RootDirectory, repo.Name)
-
-	gitRepo, err := m.git.Open(fullPath)
-	if err != nil && err != git.ErrRepositoryNotExists {
+	repo.FullPath = filepath.Join(m.cfg.RootDirectory, repo.Name)
+	gitRepo, err := m.git.Open(repo.FullPath)
+	if err == git.ErrRepositoryNotExists {
+		m.repoCache[name] = repo
+		return repo, nil
+	}
+	if err != nil {
 		return nil, err
-	} else if err == nil {
-		// load current branch
-		head, err := gitRepo.Head()
-		if err != nil {
-			return nil, err
-		}
-		gitHead = head.Name().Short()
+	}
+
+	// load current branch
+	head, err := gitRepo.Head()
+	if err != nil {
+		return nil, err
 	}
 
 	repo.gitRepo = gitRepo
-	repo.GitHead = gitHead
-	repo.FullPath = fullPath
-	repo.ExpectedForkName = expectedForkName
+	repo.GitHead = head.Name().Short()
 	// cache repository
 	m.repoCache[name] = repo
 	return repo, nil
@@ -157,8 +155,7 @@ func (m *Manager) LoadAll() error {
 		}
 	}
 	for _, serviceName := range m.cfg.Repositories.Services {
-		serviceRepoName := fmt.Sprintf("%s-controller", serviceName)
-		_, err := m.LoadRepository(serviceRepoName, RepositoryTypeController)
+		_, err := m.LoadRepository(serviceName, RepositoryTypeController)
 		if err != nil {
 			return err
 		}
