@@ -164,7 +164,9 @@ func TestManager_LoadAll(t *testing.T) {
 				git:       fakeGit,
 				repoCache: make(map[string]*Repository),
 			},
-			wantErr: true,
+			// `ackdev list repositories` should not hide non cloned repositories.
+			// It should just show that there are no active branches locally.
+			wantErr: false,
 		},
 		{
 			name: "unexpected repository error",

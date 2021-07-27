@@ -179,6 +179,48 @@ kustomize      OK        v4.0.1          /usr/local/bin/kustomize
 controller-gen OK        v0.4.0          /usr/bin/controller-gen
 ```
 
+#### Managed repositories
+
+`ackdev` can help manage the repositories you need to interact with in your ACK
+development journey. To list all the repositories that you have configured, you
+can run:
+
+```bash
+ackdev list repos # repo|repository|repositories [--filter|--show-branch]
+```
+
+The output will look like this:
+```bash
+NAME                   TYPE       BRANCH 
+test-infra             core       main   
+runtime                core       main   
+code-generator         core       main   
+dev-tools              core       main   
+dynamodb-controller    controller main   
+ecr-controller         controller main   
+s3-controller          controller main   
+eks-controller         controller main   
+sqs-controller         controller main   
+s3-controller          controller main   
+mq-controller          controller main   
+elasticache-controller controller main
+```
+
+You can filter repositories by name, type, branch or name prefix. e.g `--filter=type=controller`
+
+To configure and ensure (fork+clone) a new repository you can run:
+
+```bash
+ackdev add repo eks --type=controller
+```
+
+To ensure that all the configured repositories are forked in your github account
+and cloned in your local GOPATH, you can run:
+
+```bash
+ackdev ensure repos
+```
+
 ## License
 
 This project is licensed under the Apache-2.0 License.
