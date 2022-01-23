@@ -92,7 +92,7 @@ type Manager struct {
 // LoadRepository loads information about a single local repository
 func (m *Manager) LoadRepository(name string, t RepositoryType) (*Repository, error) {
 	// check repo cache
-	repo, err := m.getRepository(name)
+	repo, err := m.GetRepository(name)
 	if err == nil {
 		return repo, nil
 	}
@@ -163,8 +163,8 @@ func (m *Manager) LoadAll() error {
 	return nil
 }
 
-// getRepository returns a repository from the cache
-func (m *Manager) getRepository(repoName string) (*Repository, error) {
+// GetRepository returns a repository from the cache
+func (m *Manager) GetRepository(repoName string) (*Repository, error) {
 	repo, ok := m.repoCache[repoName]
 	if !ok {
 		return nil, ErrRepositoryNotCached
@@ -178,7 +178,7 @@ func (m *Manager) List(filters ...Filter) []*Repository {
 	repoNames := append(m.cfg.Repositories.Core, m.cfg.Repositories.Services...)
 mainLoop:
 	for _, repoName := range repoNames {
-		repo, err := m.getRepository(repoName)
+		repo, err := m.GetRepository(repoName)
 		if err != nil {
 			continue
 		}
@@ -197,7 +197,7 @@ func (m *Manager) clone(ctx context.Context, repoName string) error {
 	// TODO(a-hilaly) ideally we need to store all repository names (service name, fork name,
 	// local clone name etc...)
 	repoName = strings.TrimSuffix(repoName, "-controller")
-	repo, err := m.getRepository(repoName)
+	repo, err := m.GetRepository(repoName)
 	if err != nil {
 		return fmt.Errorf("cannot clone repository %s: %v", repoName, err)
 	}
@@ -284,7 +284,7 @@ func (m *Manager) EnsureClone(ctx context.Context, repo *Repository) error {
 // EnsureRepository ensures the current user owns a fork of the given repository
 // and has cloned it.
 func (m *Manager) EnsureRepository(ctx context.Context, name string) error {
-	repo, err := m.getRepository(name)
+	repo, err := m.GetRepository(name)
 	if err != nil && err != ErrRepositoryDoesntExist {
 		return err
 	}
