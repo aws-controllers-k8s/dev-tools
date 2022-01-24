@@ -16,6 +16,7 @@ package cmd
 import (
 	"fmt"
 	"path/filepath"
+	"time"
 
 	"github.com/spf13/cobra"
 	"helm.sh/helm/v3/pkg/release"
@@ -32,10 +33,21 @@ const (
 	defaultPrometheusRepoName    = "prometheus-community"
 	defaultPrometheusNamespace   = "prometheus"
 	defaultPrometheusReleaseName = "kube-prom"
+	defaultSoakRunnerReleaseName = "soak-test"
+)
+
+var (
+	defaultSoakRunnerDuration = 24 * time.Hour
+)
+
+var (
+	optSoakInstallImageRepository string
+	optSoakInstallImageTag        string
 )
 
 func init() {
-	// soakInstallCmd.PersistentFlags().StringVar(&optBootstrapSoakClusterConfig, "cluster-config", defaultSoakClusterConfig, "eksctl cluster config file")
+	soakInstallCmd.PersistentFlags().StringVar(&optSoakInstallImageRepository, "image-repo", "", "the repository URL of the soak test image")
+	soakInstallCmd.PersistentFlags().StringVar(&optSoakInstallImageTag, "image-tag", "", "the tag of the soak test image")
 }
 
 var soakInstallCmd = &cobra.Command{
@@ -46,7 +58,24 @@ var soakInstallCmd = &cobra.Command{
 	Example: "ackdev soak install --cluster-config=./cluster-config.yml --service=s3",
 }
 
-func soakInstall(cmd *cobra.Command, args []string) error {
+func soakInstall(cmd *cobra.Command, args []string) (err error) {
+	if optSoakService == "" {
+		return fmt.Errorf("you must specify a service to bootstrap")
+	}
+
+	if optSoakInstallImageTag == "" {
+		return fmt.Errorf("image-tag is a required field")
+	}
+
+	if optSoakInstallImageRepository == "" {
+		optSoakInstallImageRepository, err = soak.GetRepoURL(optSoakService)
+		if err != nil {
+			return err
+		} else if optSoakInstallImageRepository == "" {
+			return fmt.Errorf("unable to find default soak image repository")
+		}
+	}
+
 	cfg, err := config.Load(ackConfigPath)
 	if err != nil {
 		return err
@@ -57,10 +86,10 @@ func soakInstall(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// controllerRepo, err := repoManager.LoadRepository(optSoakService, repository.RepositoryTypeController)
-	// if err != nil {
-	// 	return err
-	// }
+	controllerRepo, err := repoManager.LoadRepository(optSoakService, repository.RepositoryTypeController)
+	if err != nil {
+		return err
+	}
 
 	testInfraRepo, err := repoManager.LoadRepository("test-infra", repository.RepositoryTypeCore)
 	if err != nil {
@@ -68,27 +97,35 @@ func soakInstall(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("Adding Prometheus Helm chart repository ... ")
-	// soak.AddHelmRepo(defaultPrometheusRepoName, "https://prometheus-community.github.io/helm-charts")
+	soak.AddHelmRepo(defaultPrometheusRepoName, "https://prometheus-community.github.io/helm-charts")
 	fmt.Println("👍")
 
 	fmt.Printf("Installing ACK %s controller Helm chart ... ", optSoakService)
-	// controllerChart := filepath.Join(controllerRepo.FullPath, "helm")
-	// controllerRelease, err := installController(optSoakService, controllerChart)
-	// if err != nil {
-	// 	return err
-	// }
+	controllerChart := filepath.Join(controllerRepo.FullPath, "helm")
+	_, err = installController(optSoakService, controllerChart)
+	if err != nil {
+		return err
+	}
 	fmt.Println("👍")
 
 	fmt.Printf("Installing Prometheus Helm chart ... ")
-	// _, err := installPrometheus(optSoakService)
-	// if err != nil {
-	// 	return err
-	// }
+	_, err = installPrometheus(optSoakService)
+	if err != nil {
+		return err
+	}
 	fmt.Println("👍")
 
 	fmt.Printf("Applying ACK Grafana dashboard ... ")
 	grafanaKustomization := filepath.Join(testInfraRepo.FullPath, "soak/monitoring/grafana")
 	applyGrafanaDashboard(grafanaKustomization)
+	fmt.Println("👍")
+
+	fmt.Printf("Installing soak test runner Helm chart ... ")
+	soakRunnerChart := filepath.Join(testInfraRepo.FullPath, "soak/helm/ack-soak-test")
+	_, err = installSoakRunnerChart(optSoakService, soakRunnerChart, optSoakInstallImageRepository, optSoakInstallImageTag)
+	if err != nil {
+		return err
+	}
 	fmt.Println("👍")
 
 	return nil
@@ -159,4 +196,27 @@ func installPrometheus(service string) (*release.Release, error) {
 
 func applyGrafanaDashboard(dashboardKustomizationBasePath string) error {
 	return soak.ApplyKustomization(dashboardKustomizationBasePath, defaultPrometheusNamespace)
+}
+
+func installSoakRunnerChart(service string,
+	chartPath string,
+	imageRepo string,
+	imageTag string,
+) (*release.Release, error) {
+	chartValues := map[string]interface{}{
+		"awsService": service,
+		"soak": map[string]interface{}{
+			"imageRepo":             imageRepo,
+			"imageTag":              imageTag,
+			"startTimeEpochSeconds": time.Now().Unix(),
+			"durationMinutes":       defaultSoakRunnerDuration.Minutes(),
+		},
+	}
+
+	runnerRelease, err := soak.InstallLocalChart(chartPath, defaultControllerNamespace, defaultSoakRunnerReleaseName, chartValues)
+	if err != nil {
+		return nil, err
+	}
+
+	return runnerRelease, nil
 }

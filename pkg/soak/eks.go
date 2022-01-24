@@ -60,6 +60,7 @@ func SetupIRSA(service string) error {
 		"associate-iam-oidc-provider",
 		"--cluster",
 		defaultClusterName,
+		"--approve",
 	)
 	if err := cmd.Run(); err != nil {
 		return err
@@ -78,6 +79,7 @@ func SetupIRSA(service string) error {
 		// TODO(RedbackThomson): Load recommended policy from the controller
 		// repository
 		"arn:aws:iam::aws:policy/PowerUserAccess",
+		"--approve",
 	)
 	if err := cmd.Run(); err != nil {
 		return err

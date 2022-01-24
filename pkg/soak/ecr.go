@@ -31,6 +31,18 @@ func EnsureECRRepository(service string) (string, error) {
 	return *repoUri, nil
 }
 
+func GetRepoURL(service string) (string, error) {
+	repoName := fmt.Sprintf(defaultRepoNameFmt, service)
+
+	if existing, err := getRepo(repoName); err != nil {
+		return "", err
+	} else if existing != nil {
+		return *existing.RepositoryUri, nil
+	}
+
+	return "", nil
+}
+
 func createRepo(repoName string) (*string, error) {
 	input := &ecrpublic.CreateRepositoryInput{
 		RepositoryName: &repoName,
