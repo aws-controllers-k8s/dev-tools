@@ -14,6 +14,8 @@ var (
 	defaultRepoNameFmt = "ack-%s-soak"
 )
 
+// EnsureECRRepository ensures that the default soak test image ECR public
+// repository has been created, or creates it if it doesn't exist.
 func EnsureECRRepository(service string) (string, error) {
 	repoName := fmt.Sprintf(defaultRepoNameFmt, service)
 
@@ -31,6 +33,8 @@ func EnsureECRRepository(service string) (string, error) {
 	return *repoUri, nil
 }
 
+// GetRepoURL returns the repository URL of the default soak test image ECR
+// public repository if it existed, otherwise it will return an empty string.
 func GetRepoURL(service string) (string, error) {
 	repoName := fmt.Sprintf(defaultRepoNameFmt, service)
 

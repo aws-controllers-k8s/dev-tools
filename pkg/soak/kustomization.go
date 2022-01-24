@@ -23,6 +23,8 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/filesys"
 )
 
+// ApplyKustomization builds and applies a Kustomization into the existing
+// cluster.
 func ApplyKustomization(basePath string, namespace string) error {
 	k := krusty.MakeKustomizer(
 		krusty.MakeDefaultOptions(),

@@ -16,6 +16,8 @@ var (
 	defaultServiceAccountNameFmt      = "ack-%s-controller"
 )
 
+// EnsureCluster ensures that the soak testing EKS cluster has been created and
+// configured. If not, it will create the cluster and configure it with IRSA.
 func EnsureCluster(clusterConfigPath string, service string) error {
 	existing, err := getCluster()
 	if err != nil {
@@ -41,6 +43,8 @@ func EnsureCluster(clusterConfigPath string, service string) error {
 	return nil
 }
 
+// CreateCluster creates an EKS cluster using a given eksctl cluster config
+// file.
 func CreateCluster(clusterConfigPath string) error {
 	cmd := exec.Command("eksctl", "create", "cluster", "-f", clusterConfigPath)
 
@@ -54,6 +58,8 @@ func CreateCluster(clusterConfigPath string) error {
 	return nil
 }
 
+// SetupIRSA associates the IAM OIDC provider with the existing cluster and
+// creates an IAM service account in the cluster.
 func SetupIRSA(service string) error {
 	cmd := exec.Command("eksctl",
 		"utils",
@@ -88,6 +94,8 @@ func SetupIRSA(service string) error {
 	return nil
 }
 
+// GetDefaultServiceAccountName returns the default service account name for a
+// controller of a given service name.
 func GetDefaultServiceAccountName(service string) string {
 	return fmt.Sprintf(defaultServiceAccountNameFmt, service)
 }

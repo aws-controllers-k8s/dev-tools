@@ -22,6 +22,7 @@ import (
 	"helm.sh/helm/v3/pkg/repo"
 )
 
+// InstallLocalChart installs a Helm chart from a local path.
 func InstallLocalChart(
 	chartPath string,
 	namespace string,
@@ -55,6 +56,7 @@ func InstallLocalChart(
 	return release, nil
 }
 
+// InstallRepoChart installs a Helm chart from a remote chart repository.
 func InstallRepoChart(
 	repo string,
 	chart string,
@@ -78,6 +80,7 @@ func InstallRepoChart(
 	return InstallLocalChart(cp, namespace, releaseName, values)
 }
 
+// AddHelmRepo adds a remote chart repository and updates the indexes.
 func AddHelmRepo(name string, url string) error {
 	settings := cli.New()
 	repoFile := settings.RepositoryConfig

@@ -40,7 +40,7 @@ var soakBootstrapCmd = &cobra.Command{
 	RunE:    soakBootstrap,
 	Args:    cobra.NoArgs,
 	Short:   "Bootstrap the soak test cluster",
-	Example: "ackdev soak bootstrap --cluster-config=./cluster-config.yml --service=s3",
+	Example: "ackdev soak bootstrap --service=s3",
 }
 
 func soakBootstrap(cmd *cobra.Command, args []string) error {
@@ -67,7 +67,7 @@ func soakBootstrap(cmd *cobra.Command, args []string) error {
 
 	fmt.Printf("👍 (%s)\n", repoUri)
 
-	fmt.Println("Bootstrapping EKS Cluster (this may take >30 minutes) ... ")
+	fmt.Printf("Bootstrapping EKS Cluster (this may take >30 minutes) ... ")
 	err = soak.EnsureCluster(clusterConfig, optSoakService)
 	if err != nil {
 		return err
