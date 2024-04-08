@@ -16,7 +16,7 @@ package repository
 import (
 	"fmt"
 
-	"gopkg.in/src-d/go-git.v4"
+	"github.com/go-git/go-git/v5"
 )
 
 // NewRepository returns a pointer to a new repository.

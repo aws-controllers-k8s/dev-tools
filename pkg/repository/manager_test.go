@@ -20,12 +20,12 @@ import (
 	"fmt"
 	"testing"
 
-	gogithub "github.com/google/go-github/v35/github"
+	"github.com/go-git/go-git/v5"
+	gitconfig "github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	gogithub "github.com/google/go-github/v61/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/src-d/go-git.v4"
-	gitconfig "gopkg.in/src-d/go-git.v4/config"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport"
 
 	"github.com/aws-controllers-k8s/dev-tools/pkg/config"
 	ackdevgit "github.com/aws-controllers-k8s/dev-tools/pkg/git"
