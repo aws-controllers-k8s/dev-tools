@@ -1,8 +1,6 @@
 module github.com/aws-controllers-k8s/dev-tools
 
-go 1.21
-
-toolchain go1.22.1
+go 1.23.0
 
 require (
 	github.com/ghodss/yaml v1.0.0
@@ -15,7 +13,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.31.0
-	golang.org/x/oauth2 v0.19.0
+	golang.org/x/oauth2 v0.27.0
 )
 
 require (
