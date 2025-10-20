@@ -9,6 +9,10 @@ on:
       - go.mod
       - go.sum
 
+
+permissions:
+  contents: read
+
 jobs:
   unit-tests:
     name: make test
